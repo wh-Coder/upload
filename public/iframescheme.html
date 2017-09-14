@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>隐藏的iframe方案</title>
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/showdown/1.7.3/showdown.min.js"></script>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="markdown"></div>
+    <form action="/upload" enctype="multipart/form-data" method="post">
+        <p>标题：<input type="text" name="test" value="test"></p>
+        <p>附件：<input type="file" name="myfile" style="display: inline-block"></p>
+        <p><input class="btn btn-primary btn-sm" type="submit" value="普通文件上传"></p>
+    </form>
+    <hr />
+    <script>
+        var converter = new showdown.Converter();
+        var text = 
+          '## 文件异步上传\n'
+        + '> 时间：2017年09月14日21:34:41\n'
+        + '### 有三种常用的方式：\n'
+        + '1. 使用第三方控件：Flash/ActiveX/浏览器插件等；交互性好（多文件、断点、进度等），性能好；需要浏览器安装插件。\n'
+        + '2. 使用隐藏的 iframe 模拟异步上传；浏览器兼容好；交互差，上传过程不可控。\n'
+        + '3. 使用 xhr level 2 纯 ajax 异步上传；支持h5,交互好；低版本浏览器不能用。\n'
+        var html = converter.makeHtml(text);
+        $('.markdown').html(html)
+    </script>
+</body>
+</html>
