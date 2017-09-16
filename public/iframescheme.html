@@ -17,6 +17,14 @@
         <p><input class="btn btn-primary btn-sm" type="submit" value="普通文件上传"></p>
     </form>
     <hr />
+    <iframe name="frm"></iframe>
+    <form action="/upload2" enctype="multipart/form-data" method="post" target="frm" onsubmit="loading(true);">
+        <p>标题：<input type="text" name="test" value="test"></p>
+        <p>附件：<input type="file" name="myfile" style="display: inline-block"></p>
+        <p><input class="btn btn-primary btn-sm" type="submit" value="异步上传">
+            <span id="uptxt" style="display: none;">正在上传...</span></p>
+    </form>
+    <div class="flist" style="border: 1px dotted darkgray"></div>
     <script>
         var converter = new showdown.Converter();
         var text = 
@@ -28,6 +36,19 @@
         + '3. 使用 xhr level 2 纯 ajax 异步上传；支持h5,交互好；低版本浏览器不能用。\n'
         var html = converter.makeHtml(text);
         $('.markdown').html(html)
+
+
+        function loading(showLoading){
+            if(showLoading){
+                $('#uptxt').show()
+            }else{
+                $('#uptxt').hide()
+            }
+        }
+        function uploadFinished(filename){
+            loading(false)
+            $('.flist').html(filename)
+        }
     </script>
 </body>
 </html>

@@ -27,9 +27,18 @@ app.post('/upload2', multipartMiddleware, function (req, res) {
     console.log(req.body)
     console.log(req.files)
 
+    var fpath = req.files.myfile.path
+    console.log(fpath)
+    // var fname = fpath.substr(fpath.lastIndexof('/') + 1)
     fs.unlink(req.files.myfile.path)
 
-    res.send('upload success!')
+    setTimeout(function(){
+        var ret = ["<script>",
+            "window.parent.uploadFinished('成功')",
+            "</script>"
+        ]
+        res.send(ret.join(""))
+    },300)
 })
 
 var server = app.listen(3000, function () {
