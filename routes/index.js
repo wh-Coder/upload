@@ -40,7 +40,19 @@ app.post('/upload2', multipartMiddleware, function (req, res) {
         res.send(ret.join(""))
     },300)
 })
+app.post('/upload3', multipartMiddleware, function (req, res) {
+    console.log(req.body)
+    console.log(req.files)
 
+    var fpath = req.files.myfile.path
+    console.log(fpath)
+    // var fname = fpath.substr(fpath.lastIndexof('/') + 1)
+    fs.unlink(req.files.myfile.path)
+
+    setTimeout(function(){
+        res.json({fname: '完成'})
+    },300)
+})
 var server = app.listen(3000, function () {
     var host = server.address().address;
     var port = server.address().port;

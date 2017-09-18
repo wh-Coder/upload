@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,46 +10,136 @@
     <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" rel="stylesheet">
 </head>
+
 <body>
-    <div class="markdown"></div>
-    <form action="/upload" enctype="multipart/form-data" method="post">
-        <p>标题：<input type="text" name="test" value="test"></p>
-        <p>附件：<input type="file" name="myfile" style="display: inline-block"></p>
-        <p><input class="btn btn-primary btn-sm" type="submit" value="普通文件上传"></p>
-    </form>
-    <hr />
-    <iframe name="frm"></iframe>
-    <form action="/upload2" enctype="multipart/form-data" method="post" target="frm" onsubmit="loading(true);">
-        <p>标题：<input type="text" name="test" value="test"></p>
-        <p>附件：<input type="file" name="myfile" style="display: inline-block"></p>
-        <p><input class="btn btn-primary btn-sm" type="submit" value="异步上传">
-            <span id="uptxt" style="display: none;">正在上传...</span></p>
-    </form>
-    <div class="flist" style="border: 1px dotted darkgray"></div>
+    <div style="float: left;width: 50%">
+        <div class="markdown"></div>
+    </div>
+    <div style="float: right;width: 50%">
+        <form action="/upload" enctype="multipart/form-data" method="post">
+            <p>标题：<input type="text" name="test" value="test"></p>
+            <p>附件：<input type="file" name="myfile" style="display: inline-block"></p>
+            <p><input class="btn btn-primary btn-sm" type="submit" value="普通文件上传"></p>
+        </form>
+        <hr />
+
+        <iframe name="frm" style="display: none;"></iframe>
+        <form action="/upload2" enctype="multipart/form-data" method="post" target="frm" onsubmit="loading(true);">
+            <p>标题：<input type="text" name="test" value="test"></p>
+            <p>附件：<input type="file" name="myfile" style="display: inline-block"></p>
+            <p><input class="btn btn-primary btn-sm" type="submit" value="异步上传">
+                <span id="uptxt" style="display: none;">正在上传...</span></p>
+        </form>
+        <div class="flist" style="border: 1px dotted darkgray"></div>
+        <hr />
+
+        <p id="upfile">附件：<input type="file" id="myfile" style="display: inline-block"></p>
+        <p id="upbtn">
+            <input class="btn btn-primary btn-sm" type="submit" value="xhr异步上传" onclick="upload()">
+            <span id="uptxt2" style="display: none;">正在上传...</span>
+            <span id="upgrog" style="display: inline-block"></span>
+            <button id="stopbtn" style="display: inline-block">停止上传</button>
+        </p>
+        <div class="flist2" style="border: 1px dotted darkgray"></div>
+        
+    </div>
+
     <script>
         var converter = new showdown.Converter();
-        var text = 
-          '## 文件异步上传\n'
-        + '> 时间：2017年09月14日21:34:41\n'
-        + '### 有三种常用的方式：\n'
-        + '1. 使用第三方控件：Flash/ActiveX/浏览器插件等；交互性好（多文件、断点、进度等），性能好；需要浏览器安装插件。\n'
-        + '2. 使用隐藏的 iframe 模拟异步上传；浏览器兼容好；交互差，上传过程不可控。\n'
-        + '3. 使用 xhr level 2 纯 ajax 异步上传；支持h5,交互好；低版本浏览器不能用。\n'
+        var text =
+            '## 文件异步上传\n'
+            + '> 时间：2017年09月14日21:34:41\n'
+            + '### 有三种常用的方式：\n'
+            + '1. 使用第三方控件：Flash/ActiveX/浏览器插件等；交互性好（多文件、断点、进度等），性能好；需要浏览器安装插件。\n'
+            + '2. 使用隐藏的 iframe 模拟异步上传；浏览器兼容好；交互差，上传过程不可控。\n'
+            + '3. 使用 xhr level 2 纯 ajax 异步上传；支持h5,交互好；低版本浏览器不能用。\n'
         var html = converter.makeHtml(text);
         $('.markdown').html(html)
 
 
-        function loading(showLoading){
-            if(showLoading){
+        function loading(showLoading) {
+            if (showLoading) {
                 $('#uptxt').show()
-            }else{
+            } else {
                 $('#uptxt').hide()
             }
         }
-        function uploadFinished(filename){
+        function uploadFinished(filename) {
             loading(false)
             $('.flist').html(filename)
         }
+
+
+        function upload() {
+            // 1. 准备 formData
+            var fd = new FormData()
+            fd.append("myfile", $("#myfile")[0].files[0])
+
+            // 2. 创建 xhr 对象
+            var xhr = new XMLHttpRequest();
+
+            // 3. 监听
+            xhr.upload.onprogress = function(event){
+                if(event.lengthComputable){
+                    var percent = Math.round(event.loaded * 100 / event.total)
+                    console.log('%d%', percent)
+                    $("#upgrog"),html(percent)
+                }
+            }
+
+            // 4. 传输开始事件
+            xhr.onloadstart = function(event){
+                console.log('load start')
+                $('#upprog').text('开始上传')
+
+                $('#stopbtn').one('click',function(){
+                    xhr.abort()
+                    $(this).hide();
+                })
+                loading2(true)
+            }
+
+            // 5. 传输完成
+            xhr.onload = function() {
+                console.log('load success')
+                $('#upprog').text('上传完成')
+
+                console.log(xhr.responseText)
+                var ret = JSON.parse(xhr.responseText)
+                // addToFlist(ret.fname)
+                $('.flist2').html(ret.fname)
+            }
+
+            // 6. 发生错误
+            xhr.onerror = function(event) {
+                console.log('eroor')
+                $('#upprog').text('发生错误')
+            }
+
+            // 7. 取消
+            xhr.onabort = function(event){
+                console.log('abort')
+                $('#upprog').text('操作被取消')                
+            }
+
+            // 8. 不管成功失败，都触发
+            xhr.onloadend = function(event) {
+                console.log('load end')
+                loading2(false)
+            }
+
+            // 9. 传送数据
+            xhr.open('POST','/upload3',true)
+            xhr.send(fd)
+        }
+        function loading2(showLoading) {
+            if (showLoading) {
+                $('#uptxt2').show()
+            } else {
+                $('#uptxt2').hide()
+            }
+        }
     </script>
 </body>
+
 </html>
